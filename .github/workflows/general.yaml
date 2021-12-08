@@ -47,5 +47,5 @@ jobs:
           components: clippy
       - uses: actions-rs/clippy-check@v1
         with:
-          command: fmt
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --locked -- -W clippy::pedantic -D warnings
