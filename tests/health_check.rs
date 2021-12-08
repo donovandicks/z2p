@@ -10,7 +10,7 @@ fn spawn_app() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port");
     let port = listener.local_addr().unwrap().port();
 
-    let server = z2p::run(listener).expect("Failed to bind to address");
+    let server = z2p::startup::run(listener).expect("Failed to bind to address");
 
     // Spawn the server as a background task, allowing it to run concurrently
     // with downstream futures and tasks, including tests

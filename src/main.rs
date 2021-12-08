@@ -1,5 +1,5 @@
 use std::net::TcpListener;
-use z2p::run;
+use z2p::startup::run;
 
 /// Runs the web server
 #[actix_web::main]
