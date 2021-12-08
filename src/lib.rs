@@ -31,6 +31,10 @@ async fn subscribe(_form: web::Form<FormData>) -> HttpResponse {
 /// # Returns
 ///
 /// * `Ok(Server)` if the build process is successful
+///
+/// # Errors
+///
+/// * Can occur if the server fails to listen on the given listener
 pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
     let server = HttpServer::new(|| {
         App::new()
