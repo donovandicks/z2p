@@ -20,3 +20,6 @@ fmt:
 # Builds an executable on the release profile
 build:
     cargo build --release
+
+run: build
+    cargo run --release
