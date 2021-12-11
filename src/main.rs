@@ -1,9 +1,12 @@
 use std::net::TcpListener;
-use z2p::startup::run;
+use z2p::{configuration::get_configuration, startup::run};
 
 /// Runs the web server
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:8000").expect("Failed to bind to address");
+    let config = get_configuration().expect("Failed to read configuration.");
+    let address = format!("127.0.0.1:{}", config.application_port);
+
+    let listener = TcpListener::bind(address)?;
     run(listener)?.await
 }
