@@ -14,6 +14,7 @@ name = "z2p"
 actix-web = "4.0.0-beta.13"
 actix-http = "3.0.0-beta.14"
 serde = "1"
+config = "0.11"
 sqlx = { version = "0.5", default-features = false, features = [
     "runtime-actix-rustls",
     "macros",
