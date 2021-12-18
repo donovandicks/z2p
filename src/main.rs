@@ -1,4 +1,4 @@
-use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use std::net::TcpListener;
 use z2p::{
     configuration::get_configuration,
@@ -13,10 +13,12 @@ async fn main() -> std::io::Result<()> {
     init_subscriber(subscriber);
 
     let config = get_configuration().expect("Failed to read configuration.");
-    let conn_pool = PgPool::connect(&config.database.connection_string())
+    let conn_pool = PgPoolOptions::new()
+        .connect_timeout(std::time::Duration::from_secs(5))
+        .connect(&config.database.connection_string())
         .await
         .expect("Failed to connect to Postgres.");
-    let address = format!("127.0.0.1:{}", config.application_port);
+    let address = format!("{}:{}", config.application.host, config.application.port);
 
     let listener = TcpListener::bind(address)?;
     run(listener, conn_pool)?.await

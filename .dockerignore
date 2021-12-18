@@ -1,0 +1,10 @@
+.cache
+.env
+.git
+.github
+*.md
+Dockerfile
+migrations/
+scripts/
+target/
+tests/

@@ -1,13 +1,50 @@
 use config;
-use serde;
+use serde::Deserialize;
+use std::convert::{TryFrom, TryInto};
 
-#[derive(serde::Deserialize)]
-pub struct Settings {
-    pub database: DatabaseSettings,
-    pub application_port: u16,
+/// The possible runtime environment for the application
+pub enum Environment {
+    Local,
+    Production,
 }
 
-#[derive(serde::Deserialize)]
+impl Environment {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Environment::Local => "local",
+            Environment::Production => "production",
+        }
+    }
+}
+
+impl TryFrom<String> for Environment {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match value.to_lowercase().as_str() {
+            "local" => Ok(Self::Local),
+            "production" => Ok(Self::Production),
+            other => Err(format!(
+                "{} is not a supported environment. Use either `local` or `production`.",
+                other,
+            )),
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct Settings {
+    pub database: DatabaseSettings,
+    pub application: ApplicationSettings,
+}
+
+#[derive(Deserialize)]
+pub struct ApplicationSettings {
+    pub port: u16,
+    pub host: String,
+}
+
+#[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: String,
@@ -43,7 +80,24 @@ impl DatabaseSettings {
 /// * A `ConfigError` if the configuration cannot be read
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let mut settings = config::Config::default();
+    let base_path = std::env::current_dir().expect("Failed to determine the current directory");
+    let config_dir = base_path.join("configuration");
 
-    settings.merge(config::File::with_name("configuration"))?;
+    // Read default config file
+    settings.merge(config::File::from(config_dir.join("base")).required(true))?;
+
+    // Detect the running environment
+    // Default to local if unspecified
+    let env: Environment = std::env::var("APP_ENVIRONMENT")
+        .unwrap_or_else(|_| "local".into())
+        .try_into()
+        .expect("Failed to parse APP_ENVIRONMENT");
+
+    // Layer on the environment specific values
+    settings.merge(config::File::from(config_dir.join(env.as_str())).required(true))?;
+
+    // Add in settings from env variables
+    settings.merge(config::Environment::with_prefix("app").separator("__"))?;
+
     settings.try_into()
 }
